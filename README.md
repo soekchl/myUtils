@@ -9,11 +9,12 @@
 ---
 
 例：
+```
 	SetShowLeave(LeaveWarning)
 	SetOutputFileLog("test", true)
-设定后调用
+		设定后调用
 	Notice("Notice")
 	Warn("Warn")
-	
+```
 	显示的时候只显示 Warn 文件记录的时候 Notice,Warn 全部记录
 ---
