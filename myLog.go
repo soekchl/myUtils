@@ -114,23 +114,13 @@ func myLog(out_flag int, mark string, show bool, v ...interface{}) {
 	go func() {
 		outstring := fmt.Sprintf("%s %s %s %d ---> %v\n",
 			time.Now().Format("2006/01/02 15:04:05"), mark, filename, line, fmt.Sprint(v...))
-
-<<<<<<< HEAD
 		if show {
 			fmt.Print(outstring)
 		}
 		if file_log_flag {
-			outputLog(outstring)
+			outputLog(outstring, out_flag)
 		}
 	}()
-=======
-	if show {
-		fmt.Print(outstring)
-	}
-	if file_log_flag {
-		outputLog(outstring, out_flag)
-	}
->>>>>>> 67f33fc8282f9ef932b8986bb38e1b1ce1b150f9
 }
 
 func outputLog(out string, out_flag int) {
