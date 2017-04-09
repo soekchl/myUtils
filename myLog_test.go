@@ -6,6 +6,9 @@ import (
 )
 
 func Test_Error(t *testing.T) {
+
+	defer NowOutLog() // 留存在缓存中的数据输出到文件中
+
 	SetOutputFileLog("test")
 	Error("test")
 	Notice("Notice")
@@ -17,7 +20,7 @@ func Test_Error(t *testing.T) {
 	Error("leave_error")
 
 	st := time.Now()
-	for i := 0; i < 1000; i++ { //8-9
+	for i := 0; i < 10000; i++ {
 		Error("test", i)
 	}
 	SetShowLeave(LeaveNotice)
@@ -28,5 +31,4 @@ func Test_Error(t *testing.T) {
 	Notice("Notice")
 	Info("info")
 	Warn("warn")
-
 }
