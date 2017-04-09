@@ -17,6 +17,8 @@ const (
 	LeaveNotice
 	LeaveWarning
 	LeaveError
+	LeaveNoShow
+
 	outDebug
 	outInfo
 	outNotice
@@ -25,83 +27,79 @@ const (
 )
 
 var (
-	file_log_name = time.Now().Format("20060102") + ".log"
+	file_log_name string
 	dir_log_name  = "myLog"
 	file_log_flag = false
 	show_leave    = LeaveDebug // 默认全输出
 )
 
+// 设定显示log等级
 func SetShowLeave(leave int) {
-	if leave < LeaveDebug || leave > LeaveError {
-		return
+	switch leave {
+	case LeaveInfo:
+		show_leave = LeaveInfo
+		break
+	case LeaveNotice:
+		show_leave = LeaveNotice
+		break
+	case LeaveWarning:
+		show_leave = LeaveWarning
+		break
+	case LeaveError:
+		show_leave = LeaveError
+		break
+	case LeaveNoShow:
+		show_leave = LeaveNoShow
+	default:
+		show_leave = LeaveDebug
+		break
 	}
-	show_leave = leave
 }
 
 func Debug(v ...interface{}) {
-	show := false
-	if show_leave <= LeaveDebug {
-		show = true
-	}
-	if show || file_log_flag {
+	if show_leave <= LeaveDebug || file_log_flag {
 		color.Set(color.FgMagenta, color.Bold)
 		defer color.Unset()
-		myLog(outDebug, "[D]", show, v...)
+		myLog(outDebug, "[D]", show_leave <= LeaveDebug, v...)
 	}
 }
 
 func Info(v ...interface{}) {
-	show := false
-	if show_leave <= LeaveInfo {
-		show = true
-	}
-	if show || file_log_flag {
+	if show_leave <= LeaveInfo || file_log_flag {
 		color.Set(color.FgBlue, color.Bold)
 		defer color.Unset()
-		myLog(outInfo, "[I]", show, v...)
+		myLog(outInfo, "[I]", show_leave <= LeaveInfo, v...)
 	}
 }
 
 func Notice(v ...interface{}) {
-	show := false
-	if show_leave <= LeaveNotice {
-		show = true
-	}
-	if show || file_log_flag {
+	if show_leave <= LeaveNotice || file_log_flag {
 		color.Set(color.FgGreen, color.Bold)
 		defer color.Unset()
-		myLog(outNotice, "[N]", show, v...)
+		myLog(outNotice, "[N]", show_leave <= LeaveNotice, v...)
 	}
 }
 
 func Warn(v ...interface{}) {
-	show := false
-	if show_leave <= LeaveWarning {
-		show = true
-	}
-	if show || file_log_flag {
+	if show_leave <= LeaveWarning || file_log_flag {
 		color.Set(color.FgYellow, color.Bold)
 		defer color.Unset()
-		myLog(outWarning, "[W]", show, v...)
+		myLog(outWarning, "[W]", show_leave <= LeaveWarning, v...)
 	}
 }
 
 func Error(v ...interface{}) {
-	show := false
-	if show_leave <= LeaveError {
-		show = true
-	}
-	if show || file_log_flag {
+	if show_leave <= LeaveError || file_log_flag {
 		color.Set(color.FgRed, color.Bold)
 		defer color.Unset()
-		myLog(outError, "【E】", show, v...)
+		myLog(outError, "【E】", show_leave <= LeaveError, v...)
 	}
 }
 
-func SetOutputFileLog(file_name string, file_output_flag bool) {
+func SetOutputFileLog(file_name string) {
 	dir_log_name = fmt.Sprintf("%s_log", file_name)
 	file_log_name = fmt.Sprintf("%s\\%s_%s.log", dir_log_name, time.Now().Format("20060102"), file_name)
-	file_log_flag = file_output_flag
+	file_log_flag = true
 }
 
 func myLog(out_flag int, mark string, show bool, v ...interface{}) {
@@ -118,7 +116,7 @@ func myLog(out_flag int, mark string, show bool, v ...interface{}) {
 		fmt.Print(outstring)
 	}
 	if file_log_flag {
-		outputLog(outstring, out_flag)
+		go outputLog(outstring, out_flag)
 	}
 }
 
