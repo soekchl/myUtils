@@ -88,40 +88,40 @@ func NowOutLog() {
 func Debug(v ...interface{}) {
 	if show_leave <= LeaveDebug || file_log_flag {
 		color.Set(color.FgMagenta, color.Bold)
-		defer color.Unset()
 		myLog("[D]", show_leave <= LeaveDebug, v...)
+		color.Unset()
 	}
 }
 
 func Info(v ...interface{}) {
 	if show_leave <= LeaveInfo || file_log_flag {
 		color.Set(color.FgBlue, color.Bold)
-		defer color.Unset()
 		myLog("[I]", show_leave <= LeaveInfo, v...)
+		color.Unset()
 	}
 }
 
 func Notice(v ...interface{}) {
 	if show_leave <= LeaveNotice || file_log_flag {
 		color.Set(color.FgGreen, color.Bold)
-		defer color.Unset()
 		myLog("[N]", show_leave <= LeaveNotice, v...)
+		color.Unset()
 	}
 }
 
 func Warn(v ...interface{}) {
 	if show_leave <= LeaveWarning || file_log_flag {
 		color.Set(color.FgYellow, color.Bold)
-		defer color.Unset()
 		myLog("[W]", show_leave <= LeaveWarning, v...)
+		color.Unset()
 	}
 }
 
 func Error(v ...interface{}) {
 	if show_leave <= LeaveError || file_log_flag {
 		color.Set(color.FgRed, color.Bold)
-		defer color.Unset()
 		myLog("【E】", show_leave <= LeaveError, v...)
+		color.Unset()
 	}
 }
 
