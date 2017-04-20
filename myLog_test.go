@@ -20,8 +20,8 @@ func Test(t *testing.T) {
 	Error("leave_error")
 
 	st := time.Now()
-	for i := 0; i < 10; i++ {
-		Error("test", i)
+	for i := 0; i < 10000; i++ {
+		Error("test", i, i+1, i+2, i+3, i+4, i+5)
 	}
 	SetShowLeave(LeaveNotice)
 	Notice(time.Since(st))
