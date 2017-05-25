@@ -28,15 +28,11 @@ var (
 	file_log_flag = false
 	show_leave    = LeaveDebug // 默认全输出
 
-	log_buff         = bytes.NewBuffer(make([]byte, 0))
+	log_buff         = bytes.NewBuffer(make([]byte, 65536))
 	log_buff_mutex   sync.Mutex
 	out_put_log_time = time.Second / 2
 	out_log_chan     = make(chan bool, 2)
 )
-
-func init() {
-	go outPutLogLoop()
-}
 
 // 设定显示log等级
 func SetShowLeave(leave int) {
@@ -65,6 +61,7 @@ func SetOutputFileLog(file_name string) {
 	dir_log_name = fmt.Sprintf("%s_log", file_name)
 	file_log_name = fmt.Sprintf("%s\\%s_%s.log", dir_log_name, time.Now().Format("20060102"), file_name)
 	file_log_flag = true
+	go outPutLogLoop()
 }
 
 func SetOutPutLogIntervalTime(interval int64) {
@@ -87,25 +84,19 @@ func NowOutLog() {
 
 func Debug(v ...interface{}) {
 	if show_leave <= LeaveDebug || file_log_flag {
-		color.Set(color.FgMagenta, color.Bold)
 		myLog("[D]", show_leave <= LeaveDebug, v...)
-		color.Unset()
 	}
 }
 
 func Info(v ...interface{}) {
 	if show_leave <= LeaveInfo || file_log_flag {
-		color.Set(color.FgBlue, color.Bold)
 		myLog("[I]", show_leave <= LeaveInfo, v...)
-		color.Unset()
 	}
 }
 
 func Notice(v ...interface{}) {
 	if show_leave <= LeaveNotice || file_log_flag {
-		color.Set(color.FgGreen, color.Bold)
 		myLog("[N]", show_leave <= LeaveNotice, v...)
-		color.Unset()
 	}
 }
 
@@ -158,7 +149,7 @@ func addOutPutLog(out string) {
 
 func outPutLogLoop() {
 	var ok bool
-	for {
+	for file_log_flag {
 		select {
 		case _, ok = <-out_log_chan:
 			if ok && log_buff.Len() > 0 {
