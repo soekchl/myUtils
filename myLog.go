@@ -61,6 +61,7 @@ func SetOutputFileLog(file_name string) {
 	dir_log_name = fmt.Sprintf("%s_log", file_name)
 	file_log_name = fmt.Sprintf("%s\\%s_%s.log", dir_log_name, time.Now().Format("20060102"), file_name)
 	file_log_flag = true
+	log_buff.Reset()
 	go outPutLogLoop()
 }
 
