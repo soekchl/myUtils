@@ -25,8 +25,10 @@ const (
 var (
 	file_log_name string
 	dir_log_name  = "myLog"
+	file_name     = ""
 	file_log_flag = false
-	show_leave    = LeaveDebug // 默认全输出
+	show_leave    = LeaveDebug       // 默认全输出
+	max_file_size = 1024 * 1024 * 50 // 50M
 
 	log_buff         = bytes.NewBuffer(make([]byte, 65536))
 	log_buff_mutex   sync.Mutex
@@ -57,12 +59,31 @@ func SetShowLeave(leave int) {
 	}
 }
 
-func SetOutputFileLog(file_name string) {
+func SetOutputFileLog(log_file_name string) {
+	file_name = log_file_name
 	dir_log_name = fmt.Sprintf("%s_log", file_name)
-	file_log_name = fmt.Sprintf("%s\\%s_%s.log", dir_log_name, time.Now().Format("20060102"), file_name)
+	checkFileSize()
 	file_log_flag = true
 	log_buff.Reset()
 	go outPutLogLoop()
+}
+
+func checkFileSize() {
+	// 判断是否存在  判断大小
+	var file os.FileInfo
+	var name string
+	var err error
+	for i := 0; ; i++ {
+		name = fmt.Sprintf("%s\\%s_%s_%d.log", dir_log_name, time.Now().Format("20060102"), file_name, i)
+		file, err = os.Stat(name)
+		if err != nil {
+			break
+		}
+		if file.Size() < int64(max_file_size) {
+			break
+		}
+	}
+	file_log_name = name
 }
 
 func SetOutPutLogIntervalTime(interval int64) {
@@ -182,6 +203,7 @@ func outputLog() {
 			return
 		}
 	}
+	defer checkFileSize()
 	defer file.Close()
 
 	log_buff_mutex.Lock()
