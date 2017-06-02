@@ -13,7 +13,8 @@
 
 例：
 ```
-	SetShowLeave(LeaveWarning)
+	SetShowLeave(LeaveWarning) 
+	//SetShowLeave(LeaveNoShow) // 完全不显示-高并发项目中用到比较多
 	SetOutputFileLog("test")
 		设定后调用
 	Notice("Notice")
