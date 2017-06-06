@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
+	//	"github.com/fatih/color"
 )
 
 const (
@@ -124,17 +124,17 @@ func Notice(v ...interface{}) {
 
 func Warn(v ...interface{}) {
 	if show_leave <= LeaveWarning || file_log_flag {
-		color.Set(color.FgYellow, color.Bold)
+		//		color.Set(color.FgYellow, color.Bold)
 		myLog("[W]", show_leave <= LeaveWarning, v...)
-		color.Unset()
+		//		color.Unset()
 	}
 }
 
 func Error(v ...interface{}) {
 	if show_leave <= LeaveError || file_log_flag {
-		color.Set(color.FgRed, color.Bold)
+		//		color.Set(color.FgRed, color.Bold)
 		myLog("【E】", show_leave <= LeaveError, v...)
-		color.Unset()
+		//		color.Unset()
 	}
 }
 
