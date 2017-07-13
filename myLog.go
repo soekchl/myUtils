@@ -170,9 +170,8 @@ func myLog(mark string, show bool, v ...interface{}) {
 
 func addOutPutLog(out string) {
 	log_buff_mutex.Lock()
-	defer log_buff_mutex.Unlock()
-
 	log_buff.WriteString(out + enter)
+	log_buff_mutex.Unlock()
 }
 
 func outPutLogLoop() {
@@ -201,7 +200,7 @@ func outputLog() {
 		}
 	}
 
-	file, err := os.OpenFile(file_log_name, os.O_APPEND, 0755)
+	file, err := os.OpenFile(file_log_name, os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		file, err = os.Create(file_log_name)
 		if err != nil {
@@ -209,12 +208,11 @@ func outputLog() {
 			return
 		}
 	}
-	defer checkFileSize()
-	defer file.Close()
 
 	log_buff_mutex.Lock()
-	defer log_buff_mutex.Unlock()
-
 	file.Write(log_buff.Bytes())
 	log_buff.Reset()
+	log_buff_mutex.Unlock()
+	file.Close()
+	checkFileSize()
 }
