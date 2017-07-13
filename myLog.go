@@ -9,8 +9,6 @@ import (
 	"runtime"
 	"sync"
 	"time"
-
-	//	"github.com/fatih/color"
 )
 
 const (
@@ -34,7 +32,16 @@ var (
 	log_buff_mutex   sync.Mutex
 	out_put_log_time = time.Second / 2
 	out_log_chan     = make(chan bool, 2)
+	enter            = "\n"
 )
+
+func init() {
+	if runtime.GOOS == "windows" {
+		enter = "\r\n"
+	} else {
+		enter = "\n"
+	}
+}
 
 // 设定显示log等级
 func SetShowLeave(leave int) {
@@ -73,8 +80,13 @@ func checkFileSize() {
 	var file os.FileInfo
 	var name string
 	var err error
+	f := "%s\\%s_%s_%d.log"
+	if runtime.GOOS != "windows" {
+		f = "%s/%s_%s_%d.log"
+	}
+
 	for i := 0; ; i++ {
-		name = fmt.Sprintf("%s\\%s_%s_%d.log", dir_log_name, time.Now().Format("20060102"), file_name, i)
+		name = fmt.Sprintf(f, dir_log_name, time.Now().Format("20060102"), file_name, i)
 		file, err = os.Stat(name)
 		if err != nil {
 			break
@@ -157,16 +169,10 @@ func myLog(mark string, show bool, v ...interface{}) {
 }
 
 func addOutPutLog(out string) {
-	if runtime.GOOS == "windows" {
-		out = out + "\r\n"
-	} else {
-		out = out + "\n"
-	}
-
 	log_buff_mutex.Lock()
 	defer log_buff_mutex.Unlock()
 
-	log_buff.WriteString(out)
+	log_buff.WriteString(out + enter)
 }
 
 func outPutLogLoop() {
