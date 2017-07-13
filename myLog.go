@@ -195,13 +195,13 @@ func outPutLogLoop() {
 
 func outputLog() {
 	if _, err := os.Stat(dir_log_name); err != nil {
-		if err := os.Mkdir(dir_log_name, 0644); err != nil {
+		if err := os.Mkdir(dir_log_name, 0755); err != nil {
 			fmt.Println(err, "Mkdir")
 			return
 		}
 	}
 
-	file, err := os.OpenFile(file_log_name, os.O_APPEND, 0644)
+	file, err := os.OpenFile(file_log_name, os.O_APPEND, 0755)
 	if err != nil {
 		file, err = os.Create(file_log_name)
 		if err != nil {
