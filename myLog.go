@@ -28,11 +28,12 @@ var (
 	show_leave    = LeaveDebug       // 默认全输出
 	max_file_size = 1024 * 1024 * 50 // 50M
 
-	log_buff         = bytes.NewBuffer(make([]byte, 65536))
-	log_buff_mutex   sync.Mutex
-	out_put_log_time = time.Second / 2
-	out_log_chan     = make(chan bool, 2)
-	enter            = "\n"
+	log_buff          = bytes.NewBuffer(make([]byte, 65536))
+	log_buff_mutex    sync.Mutex
+	out_put_log_time  = time.Second / 2
+	out_log_chan      = make(chan bool, 2)
+	out_log_over_chan = make(chan bool, 2)
+	enter             = "\n"
 )
 
 // 设定显示log等级
@@ -60,8 +61,10 @@ func SetShowLeave(leave int) {
 
 func init() {
 	if runtime.GOOS == "windows" {
+		fmt.Println("windows")
 		enter = "\r\n"
 	} else {
+		fmt.Println("linux")
 		enter = "\n"
 	}
 }
@@ -112,8 +115,8 @@ func NowOutLog() {
 		}
 	}()
 	out_log_chan <- true
-	<-out_log_chan // all buffer logs is out file done.
-	print("ok")
+	runtime.Gosched()
+	<-out_log_over_chan // all buffer logs is out file done.
 }
 
 func Debug(v ...interface{}) {
@@ -182,7 +185,7 @@ func outPutLogLoop() {
 			if ok && log_buff.Len() > 0 {
 				outputLog()
 			}
-			out_log_chan <- true
+			out_log_over_chan <- true
 			return
 		case _, ok = <-time.After(out_put_log_time):
 			if ok && log_buff.Len() > 0 {
