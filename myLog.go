@@ -35,14 +35,6 @@ var (
 	enter            = "\n"
 )
 
-func init() {
-	if runtime.GOOS == "windows" {
-		enter = "\r\n"
-	} else {
-		enter = "\n"
-	}
-}
-
 // 设定显示log等级
 func SetShowLeave(leave int) {
 	switch leave {
@@ -63,6 +55,14 @@ func SetShowLeave(leave int) {
 	default:
 		show_leave = LeaveDebug
 		break
+	}
+}
+
+func init() {
+	if runtime.GOOS == "windows" {
+		enter = "\r\n"
+	} else {
+		enter = "\n"
 	}
 }
 
@@ -157,8 +157,8 @@ func myLog(mark string, show bool, v ...interface{}) {
 		line = 0
 	}
 	_, filename := path.Split(file)
-	outstring := fmt.Sprintf("%s %s %-16s %v\n",
-		time.Now().Format("2006/01/02 15:04:05"), mark, fmt.Sprintf("%s:%d", filename, line), fmt.Sprint(v...))
+	outstring := fmt.Sprintf("%s %s %-16s %v%s",
+		time.Now().Format("2006/01/02 15:04:05"), mark, fmt.Sprintf("%s:%d", filename, line), fmt.Sprint(v...), enter)
 
 	if show {
 		fmt.Print(outstring)
