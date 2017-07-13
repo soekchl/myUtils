@@ -170,7 +170,7 @@ func myLog(mark string, show bool, v ...interface{}) {
 
 func addOutPutLog(out string) {
 	log_buff_mutex.Lock()
-	log_buff.WriteString(out + enter)
+	log_buff.WriteString(out)
 	log_buff_mutex.Unlock()
 }
 
