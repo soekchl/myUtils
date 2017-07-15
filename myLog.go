@@ -61,10 +61,8 @@ func SetShowLeave(leave int) {
 
 func init() {
 	if runtime.GOOS == "windows" {
-		fmt.Println("windows")
 		enter = "\r\n"
 	} else {
-		fmt.Println("linux")
 		enter = "\n"
 	}
 }
