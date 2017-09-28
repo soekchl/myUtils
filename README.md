@@ -4,6 +4,8 @@
 	
 	SetShowLeave 设定输出Log级别
 	
+	SetOutPutLeave 设定 输出到文件的Log级别
+	
 	SetOutputFileLog 设定输出名和是否输出到文件
 	
 	处理部分log的方法
