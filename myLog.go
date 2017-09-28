@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	LeaveDebug = iota
+	_ = iota
+	LeaveDebug
 	LeaveInfo
 	LeaveNotice
 	LeaveWarning
@@ -28,6 +29,7 @@ var (
 	file_name     = ""
 	file_log_flag = false
 	show_leave    = LeaveDebug // 默认全输出
+	out_put_leave = LeaveDebug // 默认全输出
 
 	log_buff         = bytes.NewBuffer(make([]byte, max_buff_size))
 	out_put_log_time = time.Second / 2
@@ -38,25 +40,28 @@ var (
 
 // 设定显示log等级
 func SetShowLeave(leave int) {
+	show_leave = getLeave(leave)
+}
+
+// 设定输出log等级
+func SetOutPutLeave(leave int) {
+	out_put_leave = getLeave(leave)
+}
+
+func getLeave(leave int) int {
 	switch leave {
 	case LeaveInfo:
-		show_leave = LeaveInfo
-		break
+		return LeaveInfo
 	case LeaveNotice:
-		show_leave = LeaveNotice
-		break
+		return LeaveNotice
 	case LeaveWarning:
-		show_leave = LeaveWarning
-		break
+		return LeaveWarning
 	case LeaveError:
-		show_leave = LeaveError
-		break
+		return LeaveError
 	case LeaveNoShow:
-		show_leave = LeaveNoShow
-	default:
-		show_leave = LeaveDebug
-		break
+		return LeaveNoShow
 	}
+	return LeaveDebug
 }
 
 func init() {
@@ -108,36 +113,36 @@ func SetOutPutLogIntervalTime(interval int64) {
 }
 
 func Debug(v ...interface{}) {
-	if show_leave <= LeaveDebug || file_log_flag {
-		myLog("[D]", show_leave <= LeaveDebug, v...)
+	if show_leave <= LeaveDebug || (file_log_flag && out_put_leave <= LeaveDebug) {
+		myLog("[D]", show_leave <= LeaveDebug, out_put_leave <= LeaveDebug, v...)
 	}
 }
 
 func Info(v ...interface{}) {
-	if show_leave <= LeaveInfo || file_log_flag {
-		myLog("[I]", show_leave <= LeaveInfo, v...)
+	if show_leave <= LeaveInfo || (file_log_flag && out_put_leave <= LeaveInfo) {
+		myLog("[I]", show_leave <= LeaveInfo, out_put_leave <= LeaveInfo, v...)
 	}
 }
 
 func Notice(v ...interface{}) {
-	if show_leave <= LeaveNotice || file_log_flag {
-		myLog("[N]", show_leave <= LeaveNotice, v...)
+	if show_leave <= LeaveNotice || (file_log_flag && out_put_leave <= LeaveNotice) {
+		myLog("[N]", show_leave <= LeaveNotice, out_put_leave <= LeaveNotice, v...)
 	}
 }
 
 func Warn(v ...interface{}) {
-	if show_leave <= LeaveWarning || file_log_flag {
-		myLog("[W]", show_leave <= LeaveWarning, v...)
+	if show_leave <= LeaveWarning || (file_log_flag && out_put_leave <= LeaveWarning) {
+		myLog("[W]", show_leave <= LeaveWarning, out_put_leave <= LeaveWarning, v...)
 	}
 }
 
 func Error(v ...interface{}) {
-	if show_leave <= LeaveError || file_log_flag {
-		myLog("【E】", show_leave <= LeaveError, v...)
+	if show_leave <= LeaveError || (file_log_flag && out_put_leave <= LeaveError) {
+		myLog("【E】", show_leave <= LeaveError, out_put_leave <= LeaveError, v...)
 	}
 }
 
-func myLog(mark string, show bool, v ...interface{}) {
+func myLog(mark string, show bool, out_put bool, v ...interface{}) {
 	_, file, line, ok := runtime.Caller(2)
 	if !ok {
 		file = "???"
@@ -150,7 +155,7 @@ func myLog(mark string, show bool, v ...interface{}) {
 	if show {
 		fmt.Print(outstring)
 	}
-	if file_log_flag {
+	if file_log_flag && out_put {
 		out_put_log_chan <- outstring
 	}
 }

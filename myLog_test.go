@@ -6,9 +6,6 @@ import (
 )
 
 func Test(t *testing.T) {
-
-	defer NowOutLog() // 留存在缓存中的数据输出到文件中
-
 	SetOutputFileLog("test")
 	Error("test")
 	Notice("Notice")
@@ -28,9 +25,12 @@ func Test(t *testing.T) {
 
 	SetShowLeave(LeaveNoShow)
 	Error("test")
+	SetOutPutLeave(LeaveWarning)
 	Notice("Notice")
 	Info("info")
 	Warn("warn")
+
+	time.Sleep(time.Second)
 }
 
 func BenchmarkError(b *testing.B) {
