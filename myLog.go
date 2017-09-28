@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"runtime"
-	"sync"
 	"time"
 )
 
@@ -18,6 +17,9 @@ const (
 	LeaveWarning
 	LeaveError
 	LeaveNoShow
+
+	max_buff_size = 65536
+	max_file_size = 1024 * 1024 * 50 // 50M
 )
 
 var (
@@ -25,15 +27,13 @@ var (
 	dir_log_name  = "myLog"
 	file_name     = ""
 	file_log_flag = false
-	show_leave    = LeaveDebug       // 默认全输出
-	max_file_size = 1024 * 1024 * 50 // 50M
+	show_leave    = LeaveDebug // 默认全输出
 
-	log_buff          = bytes.NewBuffer(make([]byte, 65536))
-	log_buff_mutex    sync.Mutex
-	out_put_log_time  = time.Second / 2
-	out_log_chan      = make(chan bool, 2)
-	out_log_over_chan = make(chan bool, 2)
-	enter             = "\n"
+	log_buff         = bytes.NewBuffer(make([]byte, max_buff_size))
+	out_put_log_time = time.Second / 2
+	out_put_log_chan = make(chan string, 100)
+	enter            = "\n"
+	_file_format     string
 )
 
 // 设定显示log等级
@@ -65,6 +65,11 @@ func init() {
 	} else {
 		enter = "\n"
 	}
+
+	_file_format = "%s\\%s_%s_%d.log"
+	if runtime.GOOS != "windows" {
+		_file_format = "%s/%s_%s_%d.log"
+	}
 }
 
 func SetOutputFileLog(log_file_name string) {
@@ -81,13 +86,9 @@ func checkFileSize() {
 	var file os.FileInfo
 	var name string
 	var err error
-	f := "%s\\%s_%s_%d.log"
-	if runtime.GOOS != "windows" {
-		f = "%s/%s_%s_%d.log"
-	}
 
 	for i := 0; ; i++ {
-		name = fmt.Sprintf(f, dir_log_name, time.Now().Format("20060102"), file_name, i)
+		name = fmt.Sprintf(_file_format, dir_log_name, time.Now().Format("20060102"), file_name, i)
 		file, err = os.Stat(name)
 		if err != nil {
 			break
@@ -104,17 +105,6 @@ func SetOutPutLogIntervalTime(interval int64) {
 		return
 	}
 	out_put_log_time = time.Duration(interval)
-}
-
-func NowOutLog() {
-	defer func() {
-		if err := recover(); err != nil {
-			Error(err)
-		}
-	}()
-	out_log_chan <- true
-	runtime.Gosched()
-	<-out_log_over_chan // all buffer logs is out file done.
 }
 
 func Debug(v ...interface{}) {
@@ -137,17 +127,13 @@ func Notice(v ...interface{}) {
 
 func Warn(v ...interface{}) {
 	if show_leave <= LeaveWarning || file_log_flag {
-		//		color.Set(color.FgYellow, color.Bold)
 		myLog("[W]", show_leave <= LeaveWarning, v...)
-		//		color.Unset()
 	}
 }
 
 func Error(v ...interface{}) {
 	if show_leave <= LeaveError || file_log_flag {
-		//		color.Set(color.FgRed, color.Bold)
 		myLog("【E】", show_leave <= LeaveError, v...)
-		//		color.Unset()
 	}
 }
 
@@ -165,29 +151,23 @@ func myLog(mark string, show bool, v ...interface{}) {
 		fmt.Print(outstring)
 	}
 	if file_log_flag {
-		addOutPutLog(outstring)
+		out_put_log_chan <- outstring
 	}
 }
 
-func addOutPutLog(out string) {
-	log_buff_mutex.Lock()
-	log_buff.WriteString(out)
-	log_buff_mutex.Unlock()
-}
-
 func outPutLogLoop() {
-	var ok bool
 	for file_log_flag {
 		select {
-		case _, ok = <-out_log_chan:
-			if ok && log_buff.Len() > 0 {
+		case <-time.After(out_put_log_time):
+			if log_buff.Len() > 0 { //	一定时间段内没有输出过log 并且有log就输出
 				outputLog()
 			}
-			out_log_over_chan <- true
-			return
-		case _, ok = <-time.After(out_put_log_time):
-			if ok && log_buff.Len() > 0 {
-				outputLog()
+		case buff, ok := <-out_put_log_chan:
+			if ok {
+				if log_buff.Len()+len(buff) > max_buff_size { // 当缓存 超过限定的时候 提前输出
+					outputLog()
+				}
+				log_buff.Write([]byte(buff)) // 写入到缓冲区
 			}
 		}
 	}
@@ -210,10 +190,8 @@ func outputLog() {
 		}
 	}
 
-	log_buff_mutex.Lock()
 	file.Write(log_buff.Bytes())
 	log_buff.Reset()
-	log_buff_mutex.Unlock()
 	file.Close()
 	checkFileSize()
 }
