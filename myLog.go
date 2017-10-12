@@ -161,19 +161,27 @@ func myLog(mark string, show bool, out_put bool, v ...interface{}) {
 }
 
 func outPutLogLoop() {
+	t := time.Now().UnixNano() // 最后一次输出log时间
 	for file_log_flag {
 		select {
 		case <-time.After(out_put_log_time):
-			if log_buff.Len() > 0 { //	一定时间段内没有输出过log 并且有log就输出
+			if log_buff.Len() > 0 { //	等待后续log到一定时间 以后输出log
 				outputLog()
+				t = time.Now().UnixNano()
 			}
 		case buff, ok := <-out_put_log_chan:
 			if ok {
 				if log_buff.Len()+len(buff) > max_buff_size { // 当缓存 超过限定的时候 提前输出
 					outputLog()
+					t = time.Now().UnixNano()
 				}
 				log_buff.Write([]byte(buff)) // 写入到缓冲区
 			}
+		}
+
+		// 当log 一定时间段内没有输出就输出一次log
+		if log_buff.Len() > 0 && (time.Now().UnixNano()-t) > int64(out_put_log_time) {
+			outputLog()
 		}
 	}
 }

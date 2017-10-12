@@ -7,18 +7,21 @@ import (
 
 func Test(t *testing.T) {
 	SetOutputFileLog("test")
-	Error("test")
-	Notice("Notice")
-	Info("info")
-	Warn("warn")
+	//	Error("test")
+	//	Notice("Notice")
+	//	Info("info")
+	//	Warn("warn")
 
-	SetShowLeave(LeaveError)
-	Warn("leave_warn")
-	Error("leave_error")
+	SetShowLeave(LeaveNoShow)
+	//	Warn("leave_warn")
+	//	Error("leave_error")
+
+	SetOutPutLeave(LeaveDebug)
 
 	st := time.Now()
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 100000; i++ {
 		Error("test", i, i+1, i+2, i+3, i+4, i+5)
+		time.Sleep(time.Millisecond * 50)
 	}
 	SetShowLeave(LeaveNotice)
 	Notice(time.Since(st))
