@@ -36,6 +36,8 @@ var (
 	out_put_log_chan = make(chan string, 100)
 	enter            = "\n"
 	_file_format     string
+
+	lastLivingMsgCount = 0
 )
 
 // 设定显示log等级
@@ -140,6 +142,26 @@ func Error(v ...interface{}) {
 	if show_leave <= LeaveError || (file_log_flag && out_put_leave <= LeaveError) {
 		myLog("【E】", show_leave <= LeaveError, out_put_leave <= LeaveError, v...)
 	}
+}
+
+func LiveMsg(v ...interface{}) {
+	//	lastLivingMsgCount
+	_, file, line, ok := runtime.Caller(1)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	_, filename := path.Split(file)
+	outstring := fmt.Sprintf("%s %-16s %v",
+		time.Now().Format("2006/01/02 15:04:05"), fmt.Sprintf("%s:%d", filename, line), fmt.Sprint(v...))
+
+	addMsg := ""
+	for i := 0; i < lastLivingMsgCount; i++ {
+		addMsg = fmt.Sprint(addMsg, "\b")
+	}
+	fmt.Print(addMsg, outstring)
+
+	lastLivingMsgCount = len(outstring)
 }
 
 func myLog(mark string, show bool, out_put bool, v ...interface{}) {

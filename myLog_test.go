@@ -21,7 +21,7 @@ func Test(t *testing.T) {
 	st := time.Now()
 	for i := 0; i < 100000; i++ {
 		Error("test", i, i+1, i+2, i+3, i+4, i+5)
-		time.Sleep(time.Millisecond * 50)
+		//		time.Sleep(time.Millisecond)
 	}
 	SetShowLeave(LeaveNotice)
 	Notice(time.Since(st))
@@ -34,6 +34,10 @@ func Test(t *testing.T) {
 	Warn("warn")
 
 	time.Sleep(time.Second)
+
+	for n := 0; n < 1024; n++ {
+		LiveMsg("test", n)
+	}
 }
 
 func BenchmarkError(b *testing.B) {
