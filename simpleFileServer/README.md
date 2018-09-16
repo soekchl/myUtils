@@ -1,6 +1,4 @@
-#simpleFileSystem
-
-simple file share and upload server
+## simple file share and upload server
 
 ## host
 
@@ -15,7 +13,7 @@ package main
 
 import (
 	. "github.com/soekchl/myUtils"
-	sfs "github.com/soekchl/myUtils/simpleFileSystem"
+	sfs "github.com/soekchl/myUtils/simpleFileServer"
 )
 
 func main() {
