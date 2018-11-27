@@ -22,4 +22,8 @@ func TestShowJsonFormat(t *testing.T) {
 	tt := make(map[string]string)
 	tt["123"] = "321"
 	t.Log(ShowJsonFormat(tt))
+
+	t.Log(ShowJsonFormat(`{"Name": "Diamond Fork","Number": 29}`))
+	t.Log(ShowJsonFormat([]byte(`{"Name": "Diamond Fork","Number": 29}`)))
+
 }
