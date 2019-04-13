@@ -104,7 +104,7 @@ func showMain(w http.ResponseWriter) {
 }
 
 func downloadFile(w http.ResponseWriter, r *http.Request) {
-	fileName := r.URL.Path[1:]
+	fileName := uploadPath + r.URL.Path[1:]
 	file, err := os.Open(fileName)
 	if err != nil {
 		if strings.Index(fileName, ".ico") < 0 {

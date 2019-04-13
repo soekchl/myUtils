@@ -19,8 +19,8 @@
 	}
 ```
 
-config.ini
+config.ini(utf-8 file)
 ```
 	[dev]
-	test		=	 true
+	test		=	 true		# desc
 ```
