@@ -26,15 +26,15 @@ const (
  </head> 
  <body> 
   <details open=""> 
-   <summary> <font size="5">上传文件</font></summary>
+   <summary> <font size="5" title="upload file" >上传文件</font></summary>
    <br /> 
    <form action="#" method="post" enctype="multipart/form-data"> 
     <input type="file" name="uploadFile" /> 
-    <input type="submit" value="点击上传"/>
+    <input type="submit" title="click upload file" value="点击上传"/>
    </form> 
   </details> 
   <details open=""> 
-   <summary> <font size="5">共享文件</font></summary>
+   <summary> <font size="5" title="share file(click download)" >共享文件(可点击下载)</font></summary>
 	%v
    <br /> 
   </details>   
@@ -159,7 +159,7 @@ func getShareFileHtml(filePath string) (result string) {
 
 	for _, v := range dir {
 		if !v.IsDir() {
-			str = fmt.Sprintf("%s<a href=\"%v\">%v</a>\n", str, v.Name(), v.Name())
+			str = fmt.Sprintf(`%s<a title="click download file" href="%v">%v</a><br>`, str, v.Name(), v.Name())
 		}
 	}
 
