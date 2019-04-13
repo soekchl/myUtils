@@ -18,23 +18,23 @@ const (
 	html = `
 <html>
  <head> 
-  <title>Share And Upload</title> 
+  <title>免费共享文件服务</title> 
   <link rel="icon" href="data:;base64,=">       <!--先禁止请求网站favicon-->
   <meta name="apple-mobile-web-app-capable" content="yes" /> 
   <meta name="apple-mobile-web-app-status-bar-style" content="black" /> 
   <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
  </head> 
  <body> 
-  <details> 
-   <summary> <font size="5">Upload File</font></summary>
+  <details open=""> 
+   <summary> <font size="5">上传文件</font></summary>
    <br /> 
    <form action="#" method="post" enctype="multipart/form-data"> 
     <input type="file" name="uploadFile" /> 
-    <input type="submit" value="upload file"/>
+    <input type="submit" value="点击上传"/>
    </form> 
   </details> 
   <details open=""> 
-   <summary> <font size="5">Share File</font></summary>
+   <summary> <font size="5">共享文件</font></summary>
 	%v
    <br /> 
   </details>   
