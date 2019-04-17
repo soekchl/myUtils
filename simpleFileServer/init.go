@@ -113,6 +113,7 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	io.Copy(w, file)
+	w.Header().Set("content-type", "application/octet-stream")
 	defer file.Close()
 }
 
