@@ -114,6 +114,36 @@ func SetOutPutLogIntervalTime(interval int64) {
 	out_put_log_time = time.Duration(interval)
 }
 
+func Debugf(format string, v ...interface{}) {
+	if show_leave <= LeaveDebug || (file_log_flag && out_put_leave <= LeaveDebug) {
+		myLog("[D]", show_leave <= LeaveDebug, out_put_leave <= LeaveDebug, fmt.Sprintf(format, v...))
+	}
+}
+
+func Infof(format string, v ...interface{}) {
+	if show_leave <= LeaveInfo || (file_log_flag && out_put_leave <= LeaveInfo) {
+		myLog("[I]", show_leave <= LeaveInfo, out_put_leave <= LeaveInfo, fmt.Sprintf(format, v...))
+	}
+}
+
+func Noticef(format string, v ...interface{}) {
+	if show_leave <= LeaveNotice || (file_log_flag && out_put_leave <= LeaveNotice) {
+		myLog("[N]", show_leave <= LeaveNotice, out_put_leave <= LeaveNotice, fmt.Sprintf(format, v...))
+	}
+}
+
+func Warnf(format string, v ...interface{}) {
+	if show_leave <= LeaveWarning || (file_log_flag && out_put_leave <= LeaveWarning) {
+		myLog("[W]", show_leave <= LeaveWarning, out_put_leave <= LeaveWarning, fmt.Sprintf(format, v...))
+	}
+}
+
+func Errorf(format string, v ...interface{}) {
+	if show_leave <= LeaveError || (file_log_flag && out_put_leave <= LeaveError) {
+		myLog("【E】", show_leave <= LeaveError, out_put_leave <= LeaveError, fmt.Sprintf(format, v...))
+	}
+}
+
 func Debug(v ...interface{}) {
 	if show_leave <= LeaveDebug || (file_log_flag && out_put_leave <= LeaveDebug) {
 		myLog("[D]", show_leave <= LeaveDebug, out_put_leave <= LeaveDebug, v...)
