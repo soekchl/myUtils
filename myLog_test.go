@@ -33,6 +33,12 @@ func Test(t *testing.T) {
 	Info("info")
 	Warn("warn")
 
+	Errorf("%s", "testErrorf")
+	Noticef("%s", "test Noticef")
+	Warnf("%s", "test Warnf")
+	Infof("%s", "test Infof")
+	Debugf("%s%s%s", "test Debugf", "hello", "debug")
+
 	time.Sleep(time.Second)
 
 	for n := 0; n < 1024; n++ {
