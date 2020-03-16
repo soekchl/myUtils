@@ -12,23 +12,23 @@ func Test(t *testing.T) {
 	//	Info("info")
 	//	Warn("warn")
 
-	SetShowLeave(LeaveNoShow)
+	SetShowLevel(LevelNoShow)
 	//	Warn("leave_warn")
 	//	Error("leave_error")
 
-	SetOutPutLeave(LeaveDebug)
+	SetOutPutLevel(LevelDebug)
 
 	st := time.Now()
 	for i := 0; i < 100000; i++ {
 		Error("test", i, i+1, i+2, i+3, i+4, i+5)
 		//		time.Sleep(time.Millisecond)
 	}
-	SetShowLeave(LeaveNotice)
+	SetShowLevel(LevelNotice)
 	Notice(time.Since(st))
 
-	SetShowLeave(LeaveNoShow)
+	SetShowLevel(LevelNoShow)
 	Error("test")
-	SetOutPutLeave(LeaveWarning)
+	SetOutPutLevel(LevelWarning)
 	Notice("Notice")
 	Info("info")
 	Warn("warn")

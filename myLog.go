@@ -12,12 +12,12 @@ import (
 
 const (
 	_ = iota
-	LeaveDebug
-	LeaveInfo
-	LeaveNotice
-	LeaveWarning
-	LeaveError
-	LeaveNoShow
+	LevelDebug
+	LevelInfo
+	LevelNotice
+	LevelWarning
+	LevelError
+	LevelNoShow
 
 	max_buff_size = 65536
 	max_file_size = 1024 * 1024 * 50 // 50M
@@ -28,8 +28,8 @@ var (
 	dir_log_name  = "myLog"
 	file_name     = ""
 	file_log_flag = false
-	show_leave    = LeaveDebug // 默认全输出
-	out_put_leave = LeaveDebug // 默认全输出
+	show_leave    = LevelDebug // 默认全输出
+	out_put_leave = LevelDebug // 默认全输出
 
 	log_buff         = bytes.NewBuffer(make([]byte, max_buff_size))
 	out_put_log_time = time.Second / 2
@@ -41,29 +41,29 @@ var (
 )
 
 // 设定显示log等级
-func SetShowLeave(leave int) {
-	show_leave = getLeave(leave)
+func SetShowLevel(leave int) {
+	show_leave = getLevel(leave)
 }
 
 // 设定输出log等级
-func SetOutPutLeave(leave int) {
-	out_put_leave = getLeave(leave)
+func SetOutPutLevel(leave int) {
+	out_put_leave = getLevel(leave)
 }
 
-func getLeave(leave int) int {
+func getLevel(leave int) int {
 	switch leave {
-	case LeaveInfo:
-		return LeaveInfo
-	case LeaveNotice:
-		return LeaveNotice
-	case LeaveWarning:
-		return LeaveWarning
-	case LeaveError:
-		return LeaveError
-	case LeaveNoShow:
-		return LeaveNoShow
+	case LevelInfo:
+		return LevelInfo
+	case LevelNotice:
+		return LevelNotice
+	case LevelWarning:
+		return LevelWarning
+	case LevelError:
+		return LevelError
+	case LevelNoShow:
+		return LevelNoShow
 	}
-	return LeaveDebug
+	return LevelDebug
 }
 
 func init() {
@@ -115,62 +115,62 @@ func SetOutPutLogIntervalTime(interval int64) {
 }
 
 func Debugf(format string, v ...interface{}) {
-	if show_leave <= LeaveDebug || (file_log_flag && out_put_leave <= LeaveDebug) {
-		myLog("[D]", show_leave <= LeaveDebug, out_put_leave <= LeaveDebug, fmt.Sprintf(format, v...))
+	if show_leave <= LevelDebug || (file_log_flag && out_put_leave <= LevelDebug) {
+		myLog("[D]", show_leave <= LevelDebug, out_put_leave <= LevelDebug, fmt.Sprintf(format, v...))
 	}
 }
 
 func Infof(format string, v ...interface{}) {
-	if show_leave <= LeaveInfo || (file_log_flag && out_put_leave <= LeaveInfo) {
-		myLog("[I]", show_leave <= LeaveInfo, out_put_leave <= LeaveInfo, fmt.Sprintf(format, v...))
+	if show_leave <= LevelInfo || (file_log_flag && out_put_leave <= LevelInfo) {
+		myLog("[I]", show_leave <= LevelInfo, out_put_leave <= LevelInfo, fmt.Sprintf(format, v...))
 	}
 }
 
 func Noticef(format string, v ...interface{}) {
-	if show_leave <= LeaveNotice || (file_log_flag && out_put_leave <= LeaveNotice) {
-		myLog("[N]", show_leave <= LeaveNotice, out_put_leave <= LeaveNotice, fmt.Sprintf(format, v...))
+	if show_leave <= LevelNotice || (file_log_flag && out_put_leave <= LevelNotice) {
+		myLog("[N]", show_leave <= LevelNotice, out_put_leave <= LevelNotice, fmt.Sprintf(format, v...))
 	}
 }
 
 func Warnf(format string, v ...interface{}) {
-	if show_leave <= LeaveWarning || (file_log_flag && out_put_leave <= LeaveWarning) {
-		myLog("[W]", show_leave <= LeaveWarning, out_put_leave <= LeaveWarning, fmt.Sprintf(format, v...))
+	if show_leave <= LevelWarning || (file_log_flag && out_put_leave <= LevelWarning) {
+		myLog("[W]", show_leave <= LevelWarning, out_put_leave <= LevelWarning, fmt.Sprintf(format, v...))
 	}
 }
 
 func Errorf(format string, v ...interface{}) {
-	if show_leave <= LeaveError || (file_log_flag && out_put_leave <= LeaveError) {
-		myLog("【E】", show_leave <= LeaveError, out_put_leave <= LeaveError, fmt.Sprintf(format, v...))
+	if show_leave <= LevelError || (file_log_flag && out_put_leave <= LevelError) {
+		myLog("【E】", show_leave <= LevelError, out_put_leave <= LevelError, fmt.Sprintf(format, v...))
 	}
 }
 
 func Debug(v ...interface{}) {
-	if show_leave <= LeaveDebug || (file_log_flag && out_put_leave <= LeaveDebug) {
-		myLog("[D]", show_leave <= LeaveDebug, out_put_leave <= LeaveDebug, v...)
+	if show_leave <= LevelDebug || (file_log_flag && out_put_leave <= LevelDebug) {
+		myLog("[D]", show_leave <= LevelDebug, out_put_leave <= LevelDebug, v...)
 	}
 }
 
 func Info(v ...interface{}) {
-	if show_leave <= LeaveInfo || (file_log_flag && out_put_leave <= LeaveInfo) {
-		myLog("[I]", show_leave <= LeaveInfo, out_put_leave <= LeaveInfo, v...)
+	if show_leave <= LevelInfo || (file_log_flag && out_put_leave <= LevelInfo) {
+		myLog("[I]", show_leave <= LevelInfo, out_put_leave <= LevelInfo, v...)
 	}
 }
 
 func Notice(v ...interface{}) {
-	if show_leave <= LeaveNotice || (file_log_flag && out_put_leave <= LeaveNotice) {
-		myLog("[N]", show_leave <= LeaveNotice, out_put_leave <= LeaveNotice, v...)
+	if show_leave <= LevelNotice || (file_log_flag && out_put_leave <= LevelNotice) {
+		myLog("[N]", show_leave <= LevelNotice, out_put_leave <= LevelNotice, v...)
 	}
 }
 
 func Warn(v ...interface{}) {
-	if show_leave <= LeaveWarning || (file_log_flag && out_put_leave <= LeaveWarning) {
-		myLog("[W]", show_leave <= LeaveWarning, out_put_leave <= LeaveWarning, v...)
+	if show_leave <= LevelWarning || (file_log_flag && out_put_leave <= LevelWarning) {
+		myLog("[W]", show_leave <= LevelWarning, out_put_leave <= LevelWarning, v...)
 	}
 }
 
 func Error(v ...interface{}) {
-	if show_leave <= LeaveError || (file_log_flag && out_put_leave <= LeaveError) {
-		myLog("【E】", show_leave <= LeaveError, out_put_leave <= LeaveError, v...)
+	if show_leave <= LevelError || (file_log_flag && out_put_leave <= LevelError) {
+		myLog("【E】", show_leave <= LevelError, out_put_leave <= LevelError, v...)
 	}
 }
 
