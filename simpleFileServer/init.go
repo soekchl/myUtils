@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -60,7 +59,7 @@ func Start(port, path string, limitUploadSizeMB int64) (err error) {
 	Warn("Port=", port, "\tShare Path=", uploadPath, "\tMax Upload Size=", limitUploadSizeMB, " MB")
 
 	http.HandleFunc("/", mainServerHandle)
-	Notice("http://", getIp(), port)
+	Notice("http://", GetIp(), port)
 	return http.ListenAndServe(port, nil)
 }
 
@@ -185,22 +184,4 @@ func checkPath(path string) error {
 	}
 
 	return nil
-}
-
-func getIp() string {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	for _, address := range addrs {
-		// 检查ip地址判断是否回环地址
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil && !strings.Contains(ipnet.String(), "/16") {
-				return ipnet.IP.To4().String()
-			}
-		}
-	}
-	return ""
-
 }
