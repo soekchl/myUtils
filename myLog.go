@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+// TODO
+/*
+	下次迭代增加 sync.Pool
+	整体结构更改和优化
+*/
+
 const (
 	_ = iota
 	LevelDebug
@@ -205,7 +211,7 @@ func myLog(mark string, show bool, out_put bool, v ...interface{}) {
 		time.Now().Format("2006/01/02 15:04:05"), mark, fmt.Sprintf("%s:%d", filename, line), fmt.Sprint(v...), enter)
 
 	if show {
-		fmt.Print(outstring)
+		fmt.Fprint(os.Stdout, outstring)
 	}
 	if file_log_flag && out_put {
 		out_put_log_chan <- outstring
