@@ -32,8 +32,9 @@ var (
 	out_put_leave = LevelDebug // 默认全输出
 
 	log_buff         = bytes.NewBuffer(make([]byte, max_buff_size))
-	out_put_log_time = time.Second / 3
+	out_put_log_time = int64(time.Second / 3)
 	out_put_log_chan = make(chan string, 128)
+	out_put_now_log  = make(chan struct{}, 10)
 	enter            = "\n"
 	_file_format     string
 
@@ -124,10 +125,11 @@ func checkFileSize() {
 }
 
 func SetOutPutLogIntervalTime(interval int64) {
-	if interval < 1 {
+	if interval < int64(time.Second)/100 {
+		out_put_log_time = int64(time.Second) / 100
 		return
 	}
-	out_put_log_time = time.Duration(interval)
+	out_put_log_time = interval
 }
 
 func Debugf(format string, v ...interface{}) {
@@ -190,6 +192,7 @@ func Error(v ...interface{}) {
 	}
 }
 
+// 每次输出都把上一次的结果清除
 func LiveMsg(v ...interface{}) {
 	//	lastLivingMsgCount
 	_, file, line, ok := runtime.Caller(1)
@@ -253,29 +256,43 @@ func myLog(level int, show bool, out_put bool, v ...interface{}) {
 }
 
 func outPutLogLoop() {
-	t := time.Now().UnixNano() // 最后一次输出log时间
+	lastOutPutTime := time.Now().UnixNano() // 最后一次输出log时间
+	outPutLeaveTime := out_put_log_time     // log输出剩余时间
+	getOutPutLeaveTime := func() {
+		if time.Now().UnixNano()-lastOutPutTime > out_put_log_time {
+			outPutLeaveTime = 0
+		} else {
+			outPutLeaveTime = time.Now().UnixNano() - lastOutPutTime
+		}
+		lastOutPutTime = time.Now().UnixNano()
+	}
+
 	for file_log_flag {
 		select {
-		case <-time.After(out_put_log_time):
+		case <-time.After(time.Duration(outPutLeaveTime)):
 			if log_buff.Len() > 0 { //	等待后续log到一定时间 以后输出log
 				outputLog()
-				t = time.Now().UnixNano()
+				getOutPutLeaveTime()
 			}
 		case buff, ok := <-out_put_log_chan:
 			if ok {
 				if log_buff.Len()+len(buff) > max_buff_size { // 当缓存 超过限定的时候 提前输出
 					outputLog()
-					t = time.Now().UnixNano()
+					getOutPutLeaveTime()
 				}
 				log_buff.Write([]byte(buff)) // 写入到缓冲区
 			}
-		}
-
-		// 当有log 并且 一定时间段内没有输出就输出一次log
-		if log_buff.Len() > 0 && (time.Now().UnixNano()-t) > int64(out_put_log_time) {
-			outputLog()
+		case <-out_put_now_log:
+			if log_buff.Len() > 0 {
+				outputLog()
+				getOutPutLeaveTime()
+			}
 		}
 	}
+}
+
+func Flush() {
+	out_put_now_log <- struct{}{}
 }
 
 func outputLog() {

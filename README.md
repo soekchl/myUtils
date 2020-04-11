@@ -10,7 +10,9 @@
 	
 	处理部分log的方法
 		grep -r "【E】" xxx.log >>  error.log
-
+	
+	完善测试用例
+		go test -test.bench=.*
 ---
 
 例：
