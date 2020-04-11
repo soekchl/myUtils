@@ -10,12 +10,6 @@ import (
 	"time"
 )
 
-// TODO
-/*
-	下次迭代增加 sync.Pool
-	整体结构更改和优化
-*/
-
 const (
 	_ = iota
 	LevelDebug
@@ -38,13 +32,26 @@ var (
 	out_put_leave = LevelDebug // 默认全输出
 
 	log_buff         = bytes.NewBuffer(make([]byte, max_buff_size))
-	out_put_log_time = time.Second / 2
-	out_put_log_chan = make(chan string, 100)
+	out_put_log_time = time.Second / 3
+	out_put_log_chan = make(chan string, 128)
 	enter            = "\n"
 	_file_format     string
 
 	lastLivingMsgCount = 0
 )
+
+func init() {
+	if runtime.GOOS == "windows" {
+		enter = "\r\n"
+	} else {
+		enter = "\n"
+	}
+
+	_file_format = "%s\\%s_%s_%d.log"
+	if runtime.GOOS != "windows" {
+		_file_format = "%s/%s_%s_%d.log"
+	}
+}
 
 // 设定显示log等级
 func SetShowLevel(leave int) {
@@ -72,17 +79,20 @@ func getLevel(leave int) int {
 	return LevelDebug
 }
 
-func init() {
-	if runtime.GOOS == "windows" {
-		enter = "\r\n"
-	} else {
-		enter = "\n"
+func getLevelString(leave int) string {
+	switch leave {
+	case LevelInfo:
+		return "[I]"
+	case LevelNotice:
+		return "[N]"
+	case LevelWarning:
+		return "[W]"
+	case LevelError:
+		return "【E】"
+	case LevelNoShow:
+		return ""
 	}
-
-	_file_format = "%s\\%s_%s_%d.log"
-	if runtime.GOOS != "windows" {
-		_file_format = "%s/%s_%s_%d.log"
-	}
+	return "[D]"
 }
 
 func SetOutputFileLog(log_file_name string) {
@@ -122,61 +132,61 @@ func SetOutPutLogIntervalTime(interval int64) {
 
 func Debugf(format string, v ...interface{}) {
 	if show_leave <= LevelDebug || (file_log_flag && out_put_leave <= LevelDebug) {
-		myLog("[D]", show_leave <= LevelDebug, out_put_leave <= LevelDebug, fmt.Sprintf(format, v...))
+		myLog(LevelDebug, show_leave <= LevelDebug, out_put_leave <= LevelDebug, fmt.Sprintf(format, v...))
 	}
 }
 
 func Infof(format string, v ...interface{}) {
 	if show_leave <= LevelInfo || (file_log_flag && out_put_leave <= LevelInfo) {
-		myLog("[I]", show_leave <= LevelInfo, out_put_leave <= LevelInfo, fmt.Sprintf(format, v...))
+		myLog(LevelInfo, show_leave <= LevelInfo, out_put_leave <= LevelInfo, fmt.Sprintf(format, v...))
 	}
 }
 
 func Noticef(format string, v ...interface{}) {
 	if show_leave <= LevelNotice || (file_log_flag && out_put_leave <= LevelNotice) {
-		myLog("[N]", show_leave <= LevelNotice, out_put_leave <= LevelNotice, fmt.Sprintf(format, v...))
+		myLog(LevelNotice, show_leave <= LevelNotice, out_put_leave <= LevelNotice, fmt.Sprintf(format, v...))
 	}
 }
 
 func Warnf(format string, v ...interface{}) {
 	if show_leave <= LevelWarning || (file_log_flag && out_put_leave <= LevelWarning) {
-		myLog("[W]", show_leave <= LevelWarning, out_put_leave <= LevelWarning, fmt.Sprintf(format, v...))
+		myLog(LevelWarning, show_leave <= LevelWarning, out_put_leave <= LevelWarning, fmt.Sprintf(format, v...))
 	}
 }
 
 func Errorf(format string, v ...interface{}) {
 	if show_leave <= LevelError || (file_log_flag && out_put_leave <= LevelError) {
-		myLog("【E】", show_leave <= LevelError, out_put_leave <= LevelError, fmt.Sprintf(format, v...))
+		myLog(LevelError, show_leave <= LevelError, out_put_leave <= LevelError, fmt.Sprintf(format, v...))
 	}
 }
 
 func Debug(v ...interface{}) {
 	if show_leave <= LevelDebug || (file_log_flag && out_put_leave <= LevelDebug) {
-		myLog("[D]", show_leave <= LevelDebug, out_put_leave <= LevelDebug, v...)
+		myLog(LevelDebug, show_leave <= LevelDebug, out_put_leave <= LevelDebug, v...)
 	}
 }
 
 func Info(v ...interface{}) {
 	if show_leave <= LevelInfo || (file_log_flag && out_put_leave <= LevelInfo) {
-		myLog("[I]", show_leave <= LevelInfo, out_put_leave <= LevelInfo, v...)
+		myLog(LevelInfo, show_leave <= LevelInfo, out_put_leave <= LevelInfo, v...)
 	}
 }
 
 func Notice(v ...interface{}) {
 	if show_leave <= LevelNotice || (file_log_flag && out_put_leave <= LevelNotice) {
-		myLog("[N]", show_leave <= LevelNotice, out_put_leave <= LevelNotice, v...)
+		myLog(LevelNotice, show_leave <= LevelNotice, out_put_leave <= LevelNotice, v...)
 	}
 }
 
 func Warn(v ...interface{}) {
 	if show_leave <= LevelWarning || (file_log_flag && out_put_leave <= LevelWarning) {
-		myLog("[W]", show_leave <= LevelWarning, out_put_leave <= LevelWarning, v...)
+		myLog(LevelWarning, show_leave <= LevelWarning, out_put_leave <= LevelWarning, v...)
 	}
 }
 
 func Error(v ...interface{}) {
 	if show_leave <= LevelError || (file_log_flag && out_put_leave <= LevelError) {
-		myLog("【E】", show_leave <= LevelError, out_put_leave <= LevelError, v...)
+		myLog(LevelError, show_leave <= LevelError, out_put_leave <= LevelError, v...)
 	}
 }
 
@@ -189,7 +199,10 @@ func LiveMsg(v ...interface{}) {
 	}
 	_, filename := path.Split(file)
 	outstring := fmt.Sprintf("%s %-16s %v",
-		time.Now().Format("2006/01/02 15:04:05"), fmt.Sprintf("%s:%d", filename, line), fmt.Sprint(v...))
+		time.Now().Format("2006/01/02 15:04:05"),
+		fmt.Sprintf("%s:%d", filename, line),
+		fmt.Sprint(v...),
+	)
 
 	addMsg := ""
 	for i := 0; i < lastLivingMsgCount; i++ {
@@ -200,21 +213,42 @@ func LiveMsg(v ...interface{}) {
 	lastLivingMsgCount = len(outstring)
 }
 
-func myLog(mark string, show bool, out_put bool, v ...interface{}) {
+func myLog(level int, show bool, out_put bool, v ...interface{}) {
+	if !out_put && !show {
+		return
+	}
+
+	mark := getLevelString(level)
 	_, file, line, ok := runtime.Caller(2)
 	if !ok {
 		file = "???"
 		line = 0
 	}
 	_, filename := path.Split(file)
-	outstring := fmt.Sprintf("%s %s %-16s %v%s",
-		time.Now().Format("2006/01/02 15:04:05"), mark, fmt.Sprintf("%s:%d", filename, line), fmt.Sprint(v...), enter)
 
 	if show {
-		fmt.Fprint(os.Stdout, outstring)
+		outStr := fmt.Sprintf("%s %s %-16s %v%s",
+			time.Now().Format("2006/01/02 15:04:05"),
+			mark,
+			fmt.Sprintf("%s:%d", filename, line),
+			fmt.Sprint(v...),
+			enter,
+		)
+		if level == LevelError {
+			fmt.Fprint(os.Stderr, outStr)
+		} else {
+			fmt.Fprint(os.Stdout, outStr)
+
+		}
 	}
 	if file_log_flag && out_put {
-		out_put_log_chan <- outstring
+		out_put_log_chan <- fmt.Sprintf("%s %s %-16s %v%s",
+			time.Now().Format("2006/01/02 15:04:05"),
+			mark,
+			fmt.Sprintf("%s:%d", filename, line),
+			fmt.Sprint(v...),
+			enter,
+		)
 	}
 }
 
@@ -237,7 +271,7 @@ func outPutLogLoop() {
 			}
 		}
 
-		// 当log 一定时间段内没有输出就输出一次log
+		// 当有log 并且 一定时间段内没有输出就输出一次log
 		if log_buff.Len() > 0 && (time.Now().UnixNano()-t) > int64(out_put_log_time) {
 			outputLog()
 		}
@@ -260,9 +294,9 @@ func outputLog() {
 			return
 		}
 	}
+	defer file.Close()
 
 	file.Write(log_buff.Bytes())
 	log_buff.Reset()
-	file.Close()
 	checkFileSize()
 }
