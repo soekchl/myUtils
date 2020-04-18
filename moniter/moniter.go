@@ -3,7 +3,6 @@ package moniter
 
 import (
 	"fmt"
-	"net/http"
 	"runtime"
 
 	"github.com/shirou/gopsutil/cpu"
@@ -12,10 +11,8 @@ import (
 	. "github.com/soekchl/myUtils"
 )
 
-// 访问指定网址 显示服务器状态  使用情况
-
 var (
-	cpu_info cpu.InfoStat
+	cpuInfo cpu.InfoStat
 )
 
 func init() {
@@ -25,44 +22,39 @@ func init() {
 		return
 	}
 	for i, v := range c {
-		Notice("CPU 信息：", v.ModelName)
-		Notice("CPU 核数：", v.Cores)
 		if i == 0 {
-			cpu_info = v
+			cpuInfo = v
 		}
 	}
 }
 
-func main() {
+func GetUseCpuPercent() ([]float64, error) {
+	return cpu.Percent(0, false)
+}
 
-	port := ":8088"
+func GetMemInfo() (*mem.VirtualMemoryStat, error) {
+	return mem.VirtualMemory()
+}
 
-	Notice("已监听端口 ", port)
-
-	http.HandleFunc("/", httpServer)
-	http.HandleFunc("/GetStatus", GetStatus)
-	if err := http.ListenAndServe(port, nil); err != nil {
-		Error("监听服务器开启失败！", err)
+func GetDiskInfo() (us []*disk.UsageStat, err error) {
+	d, err := disk.Partitions(false)
+	if err != nil {
+		return nil, err
 	}
+	for _, v := range d {
+		t, err := disk.Usage(v.Device)
+		if err != nil {
+			return nil, err
+		}
+		us = append(us, t)
+	}
+	return
+
 }
 
-func httpServer(w http.ResponseWriter, r *http.Request) {
-	str := `
-	<html>
-		<head>	
-			<title>Test</title>
-		</head>
-		<a href="GetStatus" target="_blank">服务器状态</a>
-	</html>
-	`
-	w.Header().Set("Content-Type", "text/html")
+func GetHtml() (str string) {
 
-	fmt.Fprintln(w, str)
-}
-
-func GetStatus(w http.ResponseWriter, r *http.Request) {
-
-	str := `
+	str = `
 <!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
@@ -92,8 +84,8 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	str += "</br>---------------------------------------------------</br>"
-	disk_show := ""
-	temp_str := ""
+	diskShow := ""
+	tmpStr := ""
 	for i, v := range d {
 		dd, err := disk.Usage(v.Device)
 		if err != nil {
@@ -101,14 +93,14 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		str = fmt.Sprintf("%s<b>%2v</b> 总共：%5v G  | 已使用：%4.1f %%  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", str, dd.Path, dd.Total/1024/1024/1024, dd.UsedPercent)
-		temp_str += fmt.Sprintf("<canvas id=\"disk%d\" width=\"250\" height=\"250\" ></canvas>", i+1)
-		disk_show += fmt.Sprintf("show('disk%d', %v);\n", i+1, int(dd.UsedPercent))
+		tmpStr += fmt.Sprintf("<canvas id=\"disk%d\" width=\"250\" height=\"250\" ></canvas>", i+1)
+		diskShow += fmt.Sprintf("show('disk%d', %v);\n", i+1, int(dd.UsedPercent))
 	}
-	str = fmt.Sprint(str, "</br>", temp_str, "</br>")
+	str = fmt.Sprint(str, "</br>", tmpStr, "</br>")
 	str += "</br>---------------------------------------------------</br>"
 
-	str = fmt.Sprint(str, "CPU信息：", cpu_info.ModelName, "</br>")
-	str = fmt.Sprint(str, "CPU核数：", cpu_info.Cores, "</br>")
+	str = fmt.Sprint(str, "CPU信息：", cpuInfo.ModelName, "</br>")
+	str = fmt.Sprint(str, "CPU核数：", cpuInfo.Cores, "</br>")
 	str = fmt.Sprint(str, "</br>CPU使用率：</br>")
 
 	cp, err := cpu.Percent(0, false)
@@ -116,18 +108,18 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
 		Error(err)
 		return
 	}
-	temp_str = ""
-	cpu_show := ""
+	tmpStr = ""
+	cpuShow := ""
 	for i, v := range cp {
-		temp_str += fmt.Sprintf("<canvas id=\"cpu%d\" width=\"250\" height=\"250\" ></canvas>", i+1)
-		cpu_show += fmt.Sprintf("show('cpu%d', %v);\n", i+1, v)
+		tmpStr += fmt.Sprintf("<canvas id=\"cpu%d\" width=\"250\" height=\"250\" ></canvas>", i+1)
+		cpuShow += fmt.Sprintf("show('cpu%d', %v);\n", i+1, v)
 	}
-	str = fmt.Sprint(str, "</br>", temp_str, "</br>")
+	str = fmt.Sprint(str, "</br>", tmpStr, "</br>")
 
 	str += `
 <script>
 	show('memmery', ` + fmt.Sprint(v.UsedPercent) + `);
-	` + disk_show + cpu_show + `
+	` + diskShow + cpuShow + `
 	function show(name, persent){
 		var canvas = document.getElementById(name),  //获取canvas元素
 			context = canvas.getContext('2d'),  //获取画图环境，指明为2d
@@ -185,9 +177,6 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
 
 </body>
 </html>
-
 	`
-	w.Header().Set("Content-Type", "text/html")
-
-	fmt.Fprintln(w, str)
+	return
 }
