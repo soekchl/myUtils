@@ -1,4 +1,4 @@
-package simpleFileSystem
+package simpleFileServer
 
 import (
 	"errors"
