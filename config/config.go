@@ -44,6 +44,39 @@ func GetConfigInt(key string) (int, error) {
 	return strconv.Atoi(n)
 }
 
+func GetConfigDefaultString(key, defaultStr string) string {
+	if temp, ok := config_data.Load(key); ok {
+		if val, ok := temp.(string); ok {
+			return val
+		}
+	}
+	return defaultStr
+}
+
+func GetConfigDefaultBool(key string, defaultBool bool) bool {
+	n := GetConfigString(key)
+	if n == "" {
+		return defaultBool
+	}
+	b, err := strconv.ParseBool(n)
+	if err != nil {
+		return defaultBool
+	}
+	return b
+}
+
+func GetConfigDefaultInt(key string, defaultInt int) int {
+	n := GetConfigString(key)
+	if n == "" {
+		return defaultInt
+	}
+	i, err := strconv.Atoi(n)
+	if err != nil {
+		return defaultInt
+	}
+	return i
+}
+
 func ReLoadConfig() {
 	InitConfig(config_branch_name, file_name)
 }
