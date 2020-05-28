@@ -64,6 +64,24 @@ func SetOutPutLevel(leave int) {
 	out_put_leave = getLevel(leave)
 }
 
+func GetShowLevel() (int, string) {
+	switch show_leave {
+	case LevelDebug:
+		return LevelDebug, "Debug"
+	case LevelInfo:
+		return LevelInfo, "Info"
+	case LevelNotice:
+		return LevelNotice, "Notice"
+	case LevelWarning:
+		return LevelWarning, "Warning"
+	case LevelError:
+		return LevelError, "Error"
+	case LevelNoShow:
+		return LevelNoShow, "NoShow"
+	}
+	return 0, ""
+}
+
 func getLevel(leave int) int {
 	switch leave {
 	case LevelInfo:
