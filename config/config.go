@@ -20,7 +20,7 @@ var (
 func GetConfigString(key string) string {
 	if temp, ok := config_data.Load(key); ok {
 		if val, ok := temp.(string); ok {
-			return val
+			return os.ExpandEnv(val)
 		}
 	}
 	return ""
@@ -47,7 +47,7 @@ func GetConfigInt(key string) (int, error) {
 func GetConfigDefaultString(key, defaultStr string) string {
 	if temp, ok := config_data.Load(key); ok {
 		if val, ok := temp.(string); ok {
-			return val
+			return os.ExpandEnv(val)
 		}
 	}
 	return defaultStr
