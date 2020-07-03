@@ -101,17 +101,17 @@ func getLevel(leave int) int {
 func getLevelString(leave int) string {
 	switch leave {
 	case LevelInfo:
-		return "[I]"
+		return "INFO" // return "[I]"
 	case LevelNotice:
-		return "[N]"
+		return "NOTICE" // return "[N]"
 	case LevelWarning:
-		return "[W]"
+		return "WARNING" // return "[W]"
 	case LevelError:
-		return "【E】"
+		return "ERROR" // return "【E】"
 	case LevelNoShow:
 		return ""
 	}
-	return "[D]"
+	return "DEBUG" // return "[D]"
 }
 
 func SetOutputFileLog(log_file_name string) {
