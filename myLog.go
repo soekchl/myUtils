@@ -248,7 +248,7 @@ func myLog(level int, show bool, out_put bool, v ...interface{}) {
 	_, filename := path.Split(file)
 
 	if show {
-		outStr := fmt.Sprintf("%s %s %-16s %v%s",
+		outStr := fmt.Sprintf("%s %-7s %-16s %v%s",
 			time.Now().Format("2006/01/02 15:04:05"),
 			mark,
 			fmt.Sprintf("%s:%d", filename, line),
