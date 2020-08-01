@@ -27,3 +27,11 @@ func TestShowJsonFormat(t *testing.T) {
 	t.Log(ShowJsonFormat([]byte(`{"Name": "Diamond Fork","Number": 29}`)))
 
 }
+
+func TestGetIp(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		t.Log(GetIp())
+	}
+
+	t.Log(GetIps())
+}
