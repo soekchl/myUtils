@@ -136,6 +136,7 @@ func getNameConfigDatas() {
 		val := strings.Replace(v[n+1:], "\t", "", -1)
 		k = strings.Replace(k, " ", "", -1)
 		val = strings.Replace(val, " ", "", -1)
+		val = strings.Replace(val, "\r", "", -1)
 		config_data.Store(k, val)
 	}
 }
