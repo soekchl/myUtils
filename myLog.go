@@ -292,11 +292,13 @@ func outPutLogLoop() {
 				outputLog()
 				getOutPutLeaveTime()
 			}
+			outPutLeaveTime = out_put_log_time // 重置时间
 		case buff, ok := <-out_put_log_chan:
 			if ok {
 				if log_buff.Len()+len(buff) > max_buff_size { // 当缓存 超过限定的时候 提前输出
 					outputLog()
 					getOutPutLeaveTime()
+					outPutLeaveTime = out_put_log_time // 重置时间
 				}
 				log_buff.Write([]byte(buff)) // 写入到缓冲区
 			}
@@ -304,6 +306,7 @@ func outPutLogLoop() {
 			if log_buff.Len() > 0 {
 				outputLog()
 				getOutPutLeaveTime()
+				outPutLeaveTime = out_put_log_time // 重置时间
 			}
 		}
 	}

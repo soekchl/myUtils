@@ -56,10 +56,10 @@ func TestOutPutLog(t *testing.T) {
 	SetShowLevel(LevelNoShow)
 
 	buff := bytes.NewBuffer(make([]byte, max_buff_size))
-	for i := 0; i < max_buff_size-100; i++ {
+	for i := 0; i < max_buff_size; i++ {
 		buff.WriteByte(byte('a' + i))
 	}
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 1000; i++ {
 		Notice(buff.String())
 	}
 
@@ -67,8 +67,8 @@ func TestOutPutLog(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	if len(dir) != 2 {
-		panic("输出文档个数错误，理应为2个 前一个50M左右")
+	if len(dir) <= 1 {
+		panic("输出文档个数错误，理应大于一个 前一个50M左右")
 	}
 
 }
