@@ -39,6 +39,8 @@ var (
 	_file_format     string
 
 	lastLivingMsgCount = 0
+	logOutFmt          string   // = "%s %-7s %-16s %s%s"
+	outMarks           []string //     = []string{"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "NoShow"}
 )
 
 func init() {
@@ -52,6 +54,7 @@ func init() {
 	if runtime.GOOS != "windows" {
 		_file_format = "%s/%s_%s_%d.log"
 	}
+	SetOutMark(1) // NOTE 默认第一种
 }
 
 // 设定显示log等级
@@ -64,20 +67,39 @@ func SetOutPutLevel(leave int) {
 	out_put_leave = getLevel(leave)
 }
 
+func SetOutMark(mode int) string {
+	if mode == 1 {
+		outMarks = []string{"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "NoShow"}
+		logOutFmt = "%s %-7s %-16s %s%s"
+	} else {
+		outMarks = []string{"[D]", "[I]", "[N]", "[W]", "【E】", "NoShow"}
+		logOutFmt = "%s %s %-16s %s%s"
+	}
+	return GetAllLevel()
+}
+
+func GetAllLevel() string {
+	str := ""
+	for k, _ := range outMarks {
+		str += fmt.Sprintf("%v-%v  ", k+1, outMarks[k])
+	}
+	return str
+}
+
 func GetShowLevel() (int, string) {
 	switch show_leave {
 	case LevelDebug:
-		return LevelDebug, "Debug"
+		return LevelDebug, outMarks[LevelDebug-1]
 	case LevelInfo:
-		return LevelInfo, "Info"
+		return LevelInfo, outMarks[LevelInfo-1]
 	case LevelNotice:
-		return LevelNotice, "Notice"
+		return LevelNotice, outMarks[LevelNotice-1]
 	case LevelWarning:
-		return LevelWarning, "Warning"
+		return LevelWarning, outMarks[LevelWarning-1]
 	case LevelError:
-		return LevelError, "Error"
+		return LevelError, outMarks[LevelError-1]
 	case LevelNoShow:
-		return LevelNoShow, "NoShow"
+		return LevelNoShow, outMarks[LevelNoShow-1]
 	}
 	return 0, ""
 }
@@ -101,17 +123,17 @@ func getLevel(leave int) int {
 func getLevelString(leave int) string {
 	switch leave {
 	case LevelInfo:
-		return "INFO" // return "[I]"
+		return outMarks[LevelInfo-1]
 	case LevelNotice:
-		return "NOTICE" // return "[N]"
+		return outMarks[LevelNotice-1]
 	case LevelWarning:
-		return "WARNING" // return "[W]"
+		return outMarks[LevelWarning-1]
 	case LevelError:
-		return "ERROR" // return "【E】"
+		return outMarks[LevelError-1]
 	case LevelNoShow:
 		return ""
 	}
-	return "DEBUG" // return "[D]"
+	return outMarks[LevelDebug-1]
 }
 
 func SetOutputFileLog(log_file_name string) {
@@ -182,31 +204,31 @@ func Errorf(format string, v ...interface{}) {
 
 func Debug(v ...interface{}) {
 	if show_leave <= LevelDebug || (file_log_flag && out_put_leave <= LevelDebug) {
-		myLog(LevelDebug, show_leave <= LevelDebug, out_put_leave <= LevelDebug, v...)
+		myLog(LevelDebug, show_leave <= LevelDebug, out_put_leave <= LevelDebug, fmt.Sprint(v...))
 	}
 }
 
 func Info(v ...interface{}) {
 	if show_leave <= LevelInfo || (file_log_flag && out_put_leave <= LevelInfo) {
-		myLog(LevelInfo, show_leave <= LevelInfo, out_put_leave <= LevelInfo, v...)
+		myLog(LevelInfo, show_leave <= LevelInfo, out_put_leave <= LevelInfo, fmt.Sprint(v...))
 	}
 }
 
 func Notice(v ...interface{}) {
 	if show_leave <= LevelNotice || (file_log_flag && out_put_leave <= LevelNotice) {
-		myLog(LevelNotice, show_leave <= LevelNotice, out_put_leave <= LevelNotice, v...)
+		myLog(LevelNotice, show_leave <= LevelNotice, out_put_leave <= LevelNotice, fmt.Sprint(v...))
 	}
 }
 
 func Warn(v ...interface{}) {
 	if show_leave <= LevelWarning || (file_log_flag && out_put_leave <= LevelWarning) {
-		myLog(LevelWarning, show_leave <= LevelWarning, out_put_leave <= LevelWarning, v...)
+		myLog(LevelWarning, show_leave <= LevelWarning, out_put_leave <= LevelWarning, fmt.Sprint(v...))
 	}
 }
 
 func Error(v ...interface{}) {
 	if show_leave <= LevelError || (file_log_flag && out_put_leave <= LevelError) {
-		myLog(LevelError, show_leave <= LevelError, out_put_leave <= LevelError, v...)
+		myLog(LevelError, show_leave <= LevelError, out_put_leave <= LevelError, fmt.Sprint(v...))
 	}
 }
 
@@ -234,7 +256,7 @@ func LiveMsg(v ...interface{}) {
 	lastLivingMsgCount = len(outstring)
 }
 
-func myLog(level int, show bool, out_put bool, v ...interface{}) {
+func myLog(level int, show bool, out_put bool, v string) {
 	if !out_put && !show {
 		return
 	}
@@ -248,26 +270,25 @@ func myLog(level int, show bool, out_put bool, v ...interface{}) {
 	_, filename := path.Split(file)
 
 	if show {
-		outStr := fmt.Sprintf("%s %-7s %-16s %v%s",
+		outFd := os.Stdout
+		if level == LevelError {
+			outFd = os.Stderr
+		}
+
+		fmt.Fprintf(outFd, logOutFmt,
 			time.Now().Format("2006/01/02 15:04:05"),
 			mark,
 			fmt.Sprintf("%s:%d", filename, line),
-			fmt.Sprint(v...),
+			v,
 			enter,
 		)
-		if level == LevelError {
-			fmt.Fprint(os.Stderr, outStr)
-		} else {
-			fmt.Fprint(os.Stdout, outStr)
-
-		}
 	}
 	if file_log_flag && out_put {
-		out_put_log_chan <- fmt.Sprintf("%s %s %-16s %v%s",
+		out_put_log_chan <- fmt.Sprintf(logOutFmt, // "%s %-7s %-16s %s%s"
 			time.Now().Format("2006/01/02 15:04:05"),
 			mark,
 			fmt.Sprintf("%s:%d", filename, line),
-			fmt.Sprint(v...),
+			v,
 			enter,
 		)
 	}

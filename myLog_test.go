@@ -37,15 +37,20 @@ func Test(t *testing.T) {
 	Warnf("%s", "test Warnf")
 	Infof("%s", "test Infof")
 	Debugf("%s%s%s", "test Debugf", "hello", "debug")
+	t.Log("LevelDebug", LevelDebug)
+	t.Log("SetOutMark(1)", SetOutMark(1))
+	t.Log("SetOutMark(2)", SetOutMark(2))
+	Errorf("%s", "testErrorf")
+	Noticef("%s", "test Noticef")
+	Warnf("%s", "test Warnf")
+	Infof("%s", "test Infof")
+	Debugf("%s%s%s", "test Debugf", "hello", "debug")
 }
 
 func TestOutPutLog(t *testing.T) {
-	time.Sleep(time.Second)
 	Notice("notice")
-	time.Sleep(time.Second)
 	Notice("notice")
 
-	time.Sleep(time.Second)
 	SetOutPutLogIntervalTime(int64(time.Second))
 	err := os.RemoveAll("./testOutPut_log")
 	if err != nil {
@@ -78,6 +83,9 @@ func BenchmarkError(b *testing.B) {
 	defer Flush()
 	for i := 0; i < b.N; i++ {
 		Error("test", i, i+1, i+2, i+3, i+4, i+5)
+		Errorf("test %v %v %v %v %v %v", i, i+1, i+2, i+3, i+4, i+5)
+		Notice("test", i, i+1, i+2, i+3, i+4, i+5)
+		Noticef("test %v %v %v %v %v %v", i, i+1, i+2, i+3, i+4, i+5)
 	}
 }
 

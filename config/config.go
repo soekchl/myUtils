@@ -20,7 +20,7 @@ var (
 func GetConfigString(key string) string {
 	if temp, ok := config_data.Load(key); ok {
 		if val, ok := temp.(string); ok {
-			return os.ExpandEnv(val)
+			return os.ExpandEnv(val) // NOTE 增加环境变量转换
 		}
 	}
 	return ""
