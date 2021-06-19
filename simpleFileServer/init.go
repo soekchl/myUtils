@@ -111,8 +111,9 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	io.Copy(w, file)
 	w.Header().Set("content-type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment;filename=%s",r.URL.Path[1:]))
+	io.Copy(w, file)
 	defer file.Close()
 }
 
